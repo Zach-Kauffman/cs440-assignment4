@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define BLOCK_SIZE 11
+#define MAX_BLOCK_SIZE 11
 
 struct EmpBlock{
     int eid;
@@ -102,11 +102,11 @@ void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > dep
         } else if(empList[empIdx1][empIdx2].eid > deptList[deptIdx1][deptIdx2].managerid){
             deptIdx2++;
         }
-        if(empIdx2 == BLOCK_SIZE){
+        if(empIdx2 == MAX_BLOCK_SIZE){
             empIdx1++;
             empIdx2 = 0;
         }
-        if(deptIdx2 == BLOCK_SIZE){
+        if(deptIdx2 == MAX_BLOCK_SIZE){
             deptIdx1++;
             deptIdx2 = 0;
         }
@@ -141,11 +141,11 @@ vector<vector<EmpBlock> > sortAndStoreEmps(vector<vector<EmpBlock> > empList){
     int runs = 0;
 
     // split employees into groups of 11 per memory constraints
-    for(int ii = 0; ii < tempEmp.size() % BLOCK_SIZE; ii++){
-        for(int jj = 0; jj < BLOCK_SIZE; jj++){
+    for(int ii = 0; ii < tempEmp.size() % MAX_BLOCK_SIZE; ii++){
+        for(int jj = 0; jj < MAX_BLOCK_SIZE; jj++){
             runs++;
             if(runs < tempEmp.size()){
-                smallTempEmp.push_back(tempEmp[jj + ii * BLOCK_SIZE]);
+                smallTempEmp.push_back(tempEmp[jj + ii * MAX_BLOCK_SIZE]);
             } else{
                 break;
             }
@@ -183,11 +183,11 @@ vector<vector<DeptBlock> > sortAndStoreDepts(vector<vector<DeptBlock> > deptList
 
     // split departments into groups of 11 per memory constraints
 
-    for(int ii = 0; ii < tempDept.size() % BLOCK_SIZE; ii++){
-        for(int jj = 0; jj < BLOCK_SIZE; jj++){
+    for(int ii = 0; ii < tempDept.size() % MAX_BLOCK_SIZE; ii++){
+        for(int jj = 0; jj < MAX_BLOCK_SIZE; jj++){
             runs++;
             if(runs < tempDept.size()){
-                smallTempDept.push_back(tempDept[jj + ii * BLOCK_SIZE]);
+                smallTempDept.push_back(tempDept[jj + ii * MAX_BLOCK_SIZE]);
             } else{
                 break;
             }
