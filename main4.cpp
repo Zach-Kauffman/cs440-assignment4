@@ -46,13 +46,14 @@ EmpBlock grabEmp(fstream& empin){
     }
 }
 
-void printLine(EmpBlock& emp, fstream& fout) {
+// Prints an individual tuple to file stream
+void printLine(EmpBlock& emp, fstream& fout){
     fout << emp.eid << ',' << emp.ename << ',' << emp.age << ',' << emp.salary << '\n';
 }
 
-//sort and Print out the attributes from emp and dept when a join condition is met
-void printEmpBlock(vector<EmpBlock>& emp, fstream& fout){
-    for(int ii = 0; ii < emp.size(); ii ++) {
+// Print out the attributes from emp and dept when a join condition is met
+void printEmpBlocks(vector<EmpBlock>& emp, fstream& fout){
+    for(int ii = 0; ii < emp.size(); ii++){
         printLine(emp[ii], fout);
     }
 }
@@ -72,7 +73,7 @@ int sortAndStoreEmps(){
         if(tempEmps.size() == MAX_BLOCK_SIZE){
             numTempfiles++;
             sort(tempEmps.begin(), tempEmps.end(), EmpBlock());
-            printEmpBlock(tempEmps, tempout);
+            printEmpBlocks(tempEmps, tempout);
             tempout.close();
             tempEmps.clear();
             tempout.open("temp" + to_string(numTempfiles) + ".csv", ios::out | ios::trunc);
@@ -82,7 +83,7 @@ int sortAndStoreEmps(){
         // checks if filestream is empty
         if(empBlock.eid == -1){
             sort(tempEmps.begin(), tempEmps.end(), EmpBlock());
-            printEmpBlock(tempEmps, tempout);
+            printEmpBlocks(tempEmps, tempout);
             tempout.close();
             break;
         } else{
@@ -95,11 +96,11 @@ int sortAndStoreEmps(){
 }
 
 //finds smallest eid out of all employees at current index, returns index in vector
-int getLowestEmp(vector<EmpBlock> blocks) {
+int getLowestEmp(vector<EmpBlock> blocks){
     int minvalue = blocks[0].eid;
     int index = 0;
-    for(int ii = 1; ii < blocks.size(); ii ++) {
-        if(blocks[ii].eid < minvalue) {
+    for(int ii = 1; ii < blocks.size(); ii++){
+        if(blocks[ii].eid < minvalue){
             minvalue = blocks[ii].eid;
             index = ii;
         }
@@ -110,7 +111,7 @@ int getLowestEmp(vector<EmpBlock> blocks) {
 //has a vector of empblocks and of ints, one for each temp file
 //grabs one employee at a time from each file, finds the smallest one, writes to file,
 //and increments the index. when a file is exhausted, it is removed from the vectors
-void compareAndMerge(int numTempFiles) {
+void compareAndMerge(int numTempFiles){
 
     vector<EmpBlock> emps = {};
     vector<int> mergePointers = {};
@@ -119,7 +120,7 @@ void compareAndMerge(int numTempFiles) {
     fstream f, out;
 
     //populate vectors with initial values
-    for(int ii = 0; ii < numTempFiles; ii ++) {
+    for(int ii = 0; ii < numTempFiles; ii++){
         f.open(("temp" + to_string(ii + 1) + ".csv"), ios::in);
         emps.push_back(grabEmp(f));
         f.close();
@@ -129,30 +130,29 @@ void compareAndMerge(int numTempFiles) {
     //open output file
     out.open("EmpSorted.csv", ios::out | ios::trunc);
 
-    while(true) {
+    while(true){
         index = getLowestEmp(emps);
         printLine(emps[index], out);
-        
+
         //mergePointers tracks how many lines deep in the file we are
-        mergePointers[index] ++;
-        
+        mergePointers[index]++;
+
         //reads mergePointers[ii] lines
         f.open(("temp" + to_string(index + 1) + ".csv"), ios::in);
-        for(int ii = 0; ii <= mergePointers[index]; ii ++) {
+        for(int ii = 0; ii <= mergePointers[index]; ii++){
             emps[index] = grabEmp(f);
         }
         f.close();
 
         //if eid=-1 (aka end of file), remove elements from vectors at that index
-        if(emps[index].eid == -1) {
+        if(emps[index].eid == -1){
             emps.erase(emps.begin() + index);
             mergePointers.erase(mergePointers.begin() + index);
-            if(emps.empty()) {
+            if(emps.empty()){
                 break;
             }
-        } 
+        }
     }
-
     out.close();
 }
 
