@@ -1,3 +1,6 @@
+//Zach Kauffman and David Kalcic
+//CS-440 Wi21
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -84,7 +87,7 @@ DeptBlock grabDept(fstream& deptin){
 void printJoin(EmpBlock emp, DeptBlock dept, fstream& fout){
     fout << dept.did << ',' << dept.dname << ',' << dept.budget << ','
          << dept.managerid << ',' << emp.eid << ',' << emp.ename << ','
-         << emp.salary << "\n";
+         << emp.age << ',' << emp.salary << "\n";
 }
 
 void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > deptList){
@@ -144,7 +147,7 @@ vector<vector<EmpBlock> > sortAndStoreEmps(vector<vector<EmpBlock> > empList){
     for(int ii = 0; ii < tempEmp.size() % MAX_BLOCK_SIZE; ii++){
         for(int jj = 0; jj < MAX_BLOCK_SIZE; jj++){
             runs++;
-            if(runs < tempEmp.size()){
+            if(runs < tempEmp.size() + 1){
                 smallTempEmp.push_back(tempEmp[jj + ii * MAX_BLOCK_SIZE]);
             } else{
                 break;
@@ -186,7 +189,7 @@ vector<vector<DeptBlock> > sortAndStoreDepts(vector<vector<DeptBlock> > deptList
     for(int ii = 0; ii < tempDept.size() % MAX_BLOCK_SIZE; ii++){
         for(int jj = 0; jj < MAX_BLOCK_SIZE; jj++){
             runs++;
-            if(runs < tempDept.size()){
+            if(runs < tempDept.size() + 1){
                 smallTempDept.push_back(tempDept[jj + ii * MAX_BLOCK_SIZE]);
             } else{
                 break;

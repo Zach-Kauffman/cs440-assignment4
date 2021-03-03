@@ -46,12 +46,15 @@ EmpBlock grabEmp(fstream& empin){
     }
 }
 
+void printLine(EmpBlock& emp, fstream& fout) {
+    fout << emp.eid << ',' << emp.ename << ',' << emp.age << ',' << emp.salary << '\n';
+}
+
 //sort and Print out the attributes from emp and dept when a join condition is met
 void printEmpBlock(vector<EmpBlock>& emp, fstream& fout){
     for(int ii = 0; ii < emp.size(); ii ++) {
-        fout << emp[ii].eid << ',' << emp[ii].ename << ',' << emp[ii].age << ',' << emp[ii].salary << '\n';
+        printLine(emp[ii], fout);
     }
-    
 }
 
 // Reads data until max block space has been reached, sorts, then writes to a temp file.
@@ -80,6 +83,7 @@ int sortAndStoreEmps(){
         if(empBlock.eid == -1){
             sort(tempEmps.begin(), tempEmps.end(), EmpBlock());
             printEmpBlock(tempEmps, tempout);
+            tempout.close();
             break;
         } else{
             blockCount++;
@@ -90,21 +94,53 @@ int sortAndStoreEmps(){
     return numTempfiles;
 }
 
+int getLowestEmp(vector<EmpBlock> blocks) {
+    int minvalue = blocks[0].eid;
+    int index = 0;
+    for(int ii = 1; ii < blocks.size(); ii ++) {
+        if(blocks[ii].eid < minvalue) {
+            minvalue = blocks[ii].eid;
+            index = ii;
+        }
+    }
+    return index;
+}
+
+void compareAndMerge(int numTempFiles) {
+
+    vector<fstream> fstreams = {};
+    vector<EmpBlock> emps = {};
+    int index;
+
+    fstream f, out;
+    for(int ii = 0; ii < numTempFiles; ii ++) {
+        f.open( ("temp" + to_string(numTempFiles) + ".csv"), ios::in);
+        fstreams.push_back(f);
+        emps.push_back(grabEmp(f));
+        f.close();
+    }
+
+    out.open("EmpSorted.csv", ios::out | ios::trunc);
+
+    while(true) {
+        index = getLowestEmp(emps);
+        printLine(emps[index], out);
+        fstreams[index].open("temp" + to_string(index) + ".csv", ios::in);
+        emps[index] = grabEmp(fstreams[index]);
+        fstreams[index].close();
+        if(emps[index].eid == -1) {
+            emps.erase(emps.begin() + index);
+            fstreams.erase(fstreams.begin() + index);
+            if(emps.size() == 0) {
+                break;
+            }
+        } 
+    }
+
+    out.close();
+}
+
 int main(){
-    int numTempfiles = sortAndStoreEmps();
-    cout << numTempfiles << endl;
-
-
-// Read data until there is no space left.
-// Sort it.
-// Write to a temporary file.
-// Repeat from 1 until there is no data left to read.
-// You know know how many temporary files you have, N.
-// You need to determine how many of those files you can read at one time, M.
-// If N > M, then you design your merging phase so that the last phase will merge M files.
-// You merge sets of M files into new temporary files until you reach the last merge.
-// You merge the final set of M files (or N if N < M) writing to final destination.
-
-
+    compareAndMerge(sortAndStoreEmps());
     return 0;
 }
