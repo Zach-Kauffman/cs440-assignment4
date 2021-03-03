@@ -90,44 +90,30 @@ void printJoin(EmpBlock emp, DeptBlock dept, fstream& fout){
 void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > deptList){
     fstream joinout;
     joinout.open("Joinswag.csv", ios::out | ios::app);
-    
-    int totalEmps, totalDepts;
 
-    for(int ii = 0; ii < empList.size(); ii ++) {
-        for(int jj = 0; jj < empList[ii].size(); jj ++) {
-            totalEmps ++;
-        }
-    }
+    int empIdx1 = 0, empIdx2 = 0, deptIdx1 = 0, deptIdx2 = 0;
+    while(true){
 
-    for(int ii = 0; ii < deptList.size(); ii ++) {
-        for(int jj = 0; jj < deptList[ii].size(); jj ++) {
-            totalDepts ++;
-        }
-    }
-
-    int empIdx1, empIdx2, deptIdx1, deptIdx2 = 0;
-    while(true) {
-
-        if(empList[empIdx1][empIdx2].eid == deptList[deptIdx1][deptIdx2].managerid) {
+        if(empList[empIdx1][empIdx2].eid == deptList[deptIdx1][deptIdx2].managerid){
             printJoin(empList[empIdx1][empIdx2], deptList[deptIdx1][deptIdx2], joinout);
-            deptIdx2 ++;
-        } else if (empList[empIdx1][empIdx2].eid < deptList[deptIdx1][deptIdx2].managerid) {
-            empIdx2 ++;
-        } else if (empList[empIdx1][empIdx2].eid > deptList[deptIdx1][deptIdx2].managerid) {
-            deptIdx2 ++;
-        } 
-        if(empIdx2 == BLOCK_SIZE) {
-            empIdx1 ++;
+            deptIdx2++;
+        } else if(empList[empIdx1][empIdx2].eid < deptList[deptIdx1][deptIdx2].managerid){
+            empIdx2++;
+        } else if(empList[empIdx1][empIdx2].eid > deptList[deptIdx1][deptIdx2].managerid){
+            deptIdx2++;
+        }
+        if(empIdx2 == BLOCK_SIZE){
+            empIdx1++;
             empIdx2 = 0;
         }
-        if(deptIdx2 == BLOCK_SIZE) {
-            deptIdx1 ++;
+        if(deptIdx2 == BLOCK_SIZE){
+            deptIdx1++;
             deptIdx2 = 0;
         }
-        if(empIdx1 == empList.size() || empIdx2 == empList[empIdx1].size()) {
+        if(empIdx1 == empList.size() || empIdx2 == empList[empIdx1].size()){
             break;
         }
-    } 
+    }
 
     joinout.close();
 }
