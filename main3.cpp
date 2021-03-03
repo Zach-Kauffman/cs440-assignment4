@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#define BLOCK_SIZE 11
+
 struct EmpBlock
 {
     int eid;
@@ -29,7 +31,7 @@ struct DeptBlock
 
     bool operator()(DeptBlock const & a, DeptBlock const & b) const
     {
-        return a.did < b.did;
+        return a.managerid < b.managerid;
     }
 };
 
@@ -98,118 +100,137 @@ void printJoin(EmpBlock emp, DeptBlock dept, fstream &fout)
          << dept.budget << "\n";
 }
 
-void mergeJoin(vector<EmpBlock> empList, vector<DeptBlock> deptList) {
+void mergeJoin(vector< vector< EmpBlock > > empList, vector< vector< DeptBlock > > deptList) {
     fstream joinout;
     joinout.open("Join.csv", ios::out | ios::app);
 
-    int empIdx, deptIdx = 0;
-    while(empIdx < empList.size() || deptIdx < deptList.size()) {
+    // int empIdx, deptIdx = 0;
+    // while(empIdx < empList.size() || deptIdx < deptList.size()) {
 
-        if(empList[empIdx].eid == deptList[deptIdx].did) {
-            printJoin(empList[empIdx], deptList[deptIdx], joinout);
-            empIdx ++;
-            deptIdx ++;
-        } else if (empList[empIdx].eid < deptList[deptIdx].did) {
-            empIdx ++;
-        } else {
-            deptIdx ++;
-        }
-    } 
+    //     if(empList[empIdx].eid == deptList[deptIdx].managerid) {
+    //         printJoin(empList[empIdx], deptList[deptIdx], joinout);
+    //         empIdx ++;
+    //         deptIdx ++;
+    //     } else if (empList[empIdx].eid < deptList[deptIdx].managerid) {
+    //         empIdx ++;
+    //     } else {
+    //         deptIdx ++;
+    //     }
+    // } 
 
     joinout.close();
 }
 
-int main() {
-    // open file streams to read and write
+vector< vector< EmpBlock > > sortAndStoreEmps(vector< vector< EmpBlock > > empList) {
     fstream empin;
-    fstream deptin;
-
     vector<EmpBlock> tempEmp = {};
-    
-    vector< vector< EmpBlock > > empList = {};
-    vector< DeptBlock > deptList = {};
+    vector<EmpBlock> smallTempEmp = {};
 
-    // flags check when relations are done being read
     empin.open("Emp.csv", ios::in);
     while (true) {
         // FOR BLOCK IN RELATION EMP
         // grabs a block
         EmpBlock empBlock = grabEmp(empin);
-
         // checks if filestream is empty
         if (empBlock.eid == -1) {
-            sort(tempEmp.begin(), tempEmp.end(), EmpBlock());
-            empList.push_back(tempEmp);
-            tempEmp.clear();
             break;
         } else {
             tempEmp.push_back(empBlock);
-            //can only read 22 blocks into memory at a time
-            if(tempEmp.size() == 22) {
-                sort(tempEmp.begin(), tempEmp.end(), EmpBlock());
-                empList.push_back(tempEmp);
-                tempEmp.clear();
-            }
         }
     }
+
+    // grab all employees and sort by eid
+    sort(tempEmp.begin(), tempEmp.end(), EmpBlock());
+    int runs = 0;
+
+    // split employees into groups of 11 per memory constraints
+    for(int ii = 0; ii < tempEmp.size() % BLOCK_SIZE; ii ++) {
+        for(int jj = 0; jj < BLOCK_SIZE; jj ++) {
+            runs ++;
+            if(runs < tempEmp.size()) {
+                smallTempEmp.push_back(tempEmp[jj + ii * BLOCK_SIZE]);
+            } else {
+                break;
+            }
+        }
+        empList.push_back(smallTempEmp);
+        smallTempEmp.clear();
+    }
+    empin.close();
+    return empList;
+
+}
+
+vector< vector< DeptBlock > > sortAndStoreDepts(vector< vector< DeptBlock > > deptList) {
     
-    int numVectors = empList.size();
-    int index1, index2 = 0;
-    bool flag = true;
-    while(flag) {
-        int smallestID = 2147483647;
-        int smallestIndex1, smallestIndex2;
-        for(int ii = index1; ii < numVectors; ii ++) {
-            for(int jj = index2; jj < 22; jj ++) {
-                if(empList[ii][jj].eid == -1) {
-                    flag = false;
-                    break;
-                }
-                if(empList[ii][jj].eid < smallestID) {
-                    smallestID = empList[ii][jj].eid;
-                    smallestIndex1 = ii;
-                    smallestIndex2 = jj;
-                }
-                
-            }
-        }
-        if(flag) {
-            EmpBlock temp = empList[index1][index2];
-            empList[index1][index2] = empList[smallestIndex1][smallestIndex2];
-            empList[smallestIndex1][smallestIndex2] = temp;
-
-            index2 ++;
-            if(index2 == 22) {
-                index2 = 0;
-                index1 ++;
-            }
-        }  
-    }
-
-    for(int ii = 0; ii < numVectors; ii ++) {
-        for(int jj = 0; jj < 22; jj ++) {
-            cout << empList[ii][jj].eid << endl;
-        }
-    }
+    cout << "i made it" << endl;
+    fstream deptin;
+    vector<DeptBlock> tempDept = {};
+    vector<DeptBlock> smallTempDept = {};
 
     deptin.open("Dept.csv", ios::in);
     while (true) {
-        // FOR BLOCK IN RELATION EMP
+        // FOR BLOCK IN RELATION DEPT
         // grabs a block
         DeptBlock deptBlock = grabDept(deptin);
-
         // checks if filestream is empty
         if (deptBlock.did == -1) {
             break;
         } else {
-            deptList.push_back(deptBlock);
+            tempDept.push_back(deptBlock);
         }
     }
 
-    //sort(empList.begin(), empList.end(), EmpBlock());
-    sort(deptList.begin(), deptList.end(), DeptBlock());
 
-    //mergeJoin(empList, deptList);
+    // grab all departments and sort by managerid
+    sort(tempDept.begin(), tempDept.end(), DeptBlock());
+    int runs = 0;
+
+    // split departments into groups of 11 per memory constraints
+
+    for(int ii = 0; ii < tempDept.size() % BLOCK_SIZE; ii ++) {
+        for(int jj = 0; jj < BLOCK_SIZE; jj ++) {
+            runs ++;
+            if(runs < tempDept.size()) {
+                smallTempDept.push_back(tempDept[jj + ii * BLOCK_SIZE]);
+            } else {
+                break;
+            }
+        }
+        deptList.push_back(smallTempDept);
+        smallTempDept.clear();
+    }
+
+    deptin.close();
+    return deptList;
+    
+}
+
+int main() {
+    vector< vector< EmpBlock > > empList = sortAndStoreEmps(empList);
+        cout << "swagger man ultimate" << endl;
+
+    vector< vector< DeptBlock > > deptList = sortAndStoreDepts(deptList);
+
+    // flags check when relations are done being read
+    
+
+    //REMOVE THIS WHEN UR DONE KIDDO
+    for(int ii = 0; ii < empList.size(); ii ++) {
+        for(int jj = 0; jj < empList[ii].size(); jj ++) {
+            cout << empList[ii][jj].eid << endl;
+        }
+    }
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    //REMOVE THIS WHEN UR DONE KIDDO
+    for(int ii = 0; ii < deptList.size(); ii ++) {
+        for(int jj = 0; jj < deptList[ii].size(); jj ++) {
+            cout << deptList[ii][jj].managerid << endl;
+        }
+    }
+
+    mergeJoin(empList, deptList);
     
     return 0;
 }
