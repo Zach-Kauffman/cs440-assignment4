@@ -116,8 +116,10 @@ void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > dep
         if(empIdx1 == empList.size() || empIdx2 == empList[empIdx1].size()){
             break;
         }
+        if(deptIdx1 == empList.size() || deptIdx2 == deptList[deptIdx1].size()){
+            break;
+        }
     }
-
     joinout.close();
 }
 
@@ -126,6 +128,7 @@ vector<vector<EmpBlock> > sortAndStoreEmps(vector<vector<EmpBlock> > empList){
     vector<EmpBlock> tempEmp = {};
     vector<EmpBlock> smallTempEmp = {};
 
+    
     empin.open("Emp.csv", ios::in);
     while(true){
         // FOR BLOCK IN RELATION EMP
@@ -138,7 +141,6 @@ vector<vector<EmpBlock> > sortAndStoreEmps(vector<vector<EmpBlock> > empList){
             tempEmp.push_back(empBlock);
         }
     }
-
     // grab all employees and sort by eid
     sort(tempEmp.begin(), tempEmp.end(), EmpBlock());
     int runs = 0;
@@ -167,6 +169,7 @@ vector<vector<DeptBlock> > sortAndStoreDepts(vector<vector<DeptBlock> > deptList
     vector<DeptBlock> smallTempDept = {};
 
     deptin.open("Dept.csv", ios::in);
+
     while(true){
         // FOR BLOCK IN RELATION DEPT
         // grabs a block
