@@ -89,21 +89,45 @@ void printJoin(EmpBlock emp, DeptBlock dept, fstream& fout){
 
 void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > deptList){
     fstream joinout;
-    joinout.open("Join.csv", ios::out | ios::app);
+    joinout.open("Joinswag.csv", ios::out | ios::app);
+    
+    int totalEmps, totalDepts;
 
-    // int empIdx, deptIdx = 0;
-    // while(empIdx < empList.size() || deptIdx < deptList.size()) {
+    for(int ii = 0; ii < empList.size(); ii ++) {
+        for(int jj = 0; jj < empList[ii].size(); jj ++) {
+            totalEmps ++;
+        }
+    }
 
-    //     if(empList[empIdx].eid == deptList[deptIdx].managerid) {
-    //         printJoin(empList[empIdx], deptList[deptIdx], joinout);
-    //         empIdx ++;
-    //         deptIdx ++;
-    //     } else if (empList[empIdx].eid < deptList[deptIdx].managerid) {
-    //         empIdx ++;
-    //     } else {
-    //         deptIdx ++;
-    //     }
-    // } 
+    for(int ii = 0; ii < deptList.size(); ii ++) {
+        for(int jj = 0; jj < deptList[ii].size(); jj ++) {
+            totalDepts ++;
+        }
+    }
+
+    int empIdx1, empIdx2, deptIdx1, deptIdx2 = 0;
+    while(true) {
+
+        if(empList[empIdx1][empIdx2].eid == deptList[deptIdx1][deptIdx2].managerid) {
+            printJoin(empList[empIdx1][empIdx2], deptList[deptIdx1][deptIdx2], joinout);
+            deptIdx2 ++;
+        } else if (empList[empIdx1][empIdx2].eid < deptList[deptIdx1][deptIdx2].managerid) {
+            empIdx2 ++;
+        } else if (empList[empIdx1][empIdx2].eid > deptList[deptIdx1][deptIdx2].managerid) {
+            deptIdx2 ++;
+        } 
+        if(empIdx2 == BLOCK_SIZE) {
+            empIdx1 ++;
+            empIdx2 = 0;
+        }
+        if(deptIdx2 == BLOCK_SIZE) {
+            deptIdx1 ++;
+            deptIdx2 = 0;
+        }
+        if(empIdx1 == empList.size() || empIdx2 == empList[empIdx1].size()) {
+            break;
+        }
+    } 
 
     joinout.close();
 }
@@ -149,7 +173,6 @@ vector<vector<EmpBlock> > sortAndStoreEmps(vector<vector<EmpBlock> > empList){
 }
 
 vector<vector<DeptBlock> > sortAndStoreDepts(vector<vector<DeptBlock> > deptList){
-    cout << "i made it" << endl;
     fstream deptin;
     vector<DeptBlock> tempDept = {};
     vector<DeptBlock> smallTempDept = {};
@@ -195,7 +218,6 @@ vector<vector<DeptBlock> > sortAndStoreDepts(vector<vector<DeptBlock> > deptList
 int main(){
     vector<vector<EmpBlock> > empList;
     empList = sortAndStoreEmps(empList);
-    cout << "swagger man ultimate" << endl;
 
     vector<vector<DeptBlock> > deptList;
     deptList = sortAndStoreDepts(deptList);
