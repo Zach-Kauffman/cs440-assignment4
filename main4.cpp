@@ -94,6 +94,7 @@ int sortAndStoreEmps(){
     return numTempfiles;
 }
 
+//finds smallest eid out of all employees at current index, returns index in vector
 int getLowestEmp(vector<EmpBlock> blocks) {
     int minvalue = blocks[0].eid;
     int index = 0;
@@ -106,32 +107,47 @@ int getLowestEmp(vector<EmpBlock> blocks) {
     return index;
 }
 
+//has a vector of empblocks and of ints, one for each temp file
+//grabs one employee at a time from each file, finds the smallest one, writes to file,
+//and increments the index. when a file is exhausted, it is removed from the vectors
 void compareAndMerge(int numTempFiles) {
 
-    vector<fstream> fstreams = {};
     vector<EmpBlock> emps = {};
+    vector<int> mergePointers = {};
     int index;
 
     fstream f, out;
+
+    //populate vectors with initial values
     for(int ii = 0; ii < numTempFiles; ii ++) {
-        f.open( ("temp" + to_string(numTempFiles) + ".csv"), ios::in);
-        fstreams.push_back(f);
+        f.open(("temp" + to_string(ii + 1) + ".csv"), ios::in);
         emps.push_back(grabEmp(f));
         f.close();
+        mergePointers.push_back(0);
     }
 
+    //open output file
     out.open("EmpSorted.csv", ios::out | ios::trunc);
 
     while(true) {
         index = getLowestEmp(emps);
         printLine(emps[index], out);
-        fstreams[index].open("temp" + to_string(index) + ".csv", ios::in);
-        emps[index] = grabEmp(fstreams[index]);
-        fstreams[index].close();
+        
+        //mergePointers tracks how many lines deep in the file we are
+        mergePointers[index] ++;
+        
+        //reads mergePointers[ii] lines
+        f.open(("temp" + to_string(index + 1) + ".csv"), ios::in);
+        for(int ii = 0; ii <= mergePointers[index]; ii ++) {
+            emps[index] = grabEmp(f);
+        }
+        f.close();
+
+        //if eid=-1 (aka end of file), remove elements from vectors at that index
         if(emps[index].eid == -1) {
             emps.erase(emps.begin() + index);
-            fstreams.erase(fstreams.begin() + index);
-            if(emps.size() == 0) {
+            mergePointers.erase(mergePointers.begin() + index);
+            if(emps.empty()) {
                 break;
             }
         } 
