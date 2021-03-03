@@ -89,7 +89,7 @@ void printJoin(EmpBlock emp, DeptBlock dept, fstream& fout){
 
 void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > deptList){
     fstream joinout;
-    joinout.open("Joinswag.csv", ios::out | ios::app);
+    joinout.open("join.csv", ios::out | ios::app);
 
     int empIdx1 = 0, empIdx2 = 0, deptIdx1 = 0, deptIdx2 = 0;
     while(true){
@@ -207,24 +207,6 @@ int main(){
 
     vector<vector<DeptBlock> > deptList;
     deptList = sortAndStoreDepts(deptList);
-
-    // flags check when relations are done being read
-
-
-    //REMOVE THIS WHEN UR DONE KIDDO
-    for(int ii = 0; ii < empList.size(); ii++){
-        for(int jj = 0; jj < empList[ii].size(); jj++){
-            cout << empList[ii][jj].eid << endl;
-        }
-    }
-    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-    //REMOVE THIS WHEN UR DONE KIDDO
-    for(int ii = 0; ii < deptList.size(); ii++){
-        for(int jj = 0; jj < deptList[ii].size(); jj++){
-            cout << deptList[ii][jj].managerid << endl;
-        }
-    }
 
     mergeJoin(empList, deptList);
 
