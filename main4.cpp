@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -45,9 +46,12 @@ EmpBlock grabEmp(fstream& empin){
     }
 }
 
-//Print out the attributes from emp and dept when a join condition is met
-void printTuple(const EmpBlock& emp, fstream& fout){
-    fout << emp.eid << ',' << emp.ename << ',' << emp.age << ',' << emp.salary << '\n';
+//sort and Print out the attributes from emp and dept when a join condition is met
+void printEmpBlock(vector<EmpBlock>& emp, fstream& fout){
+    for(int ii = 0; ii < emp.size(); ii ++) {
+        fout << emp[ii].eid << ',' << emp[ii].ename << ',' << emp[ii].age << ',' << emp[ii].salary << '\n';
+    }
+    
 }
 
 // Reads data until max block space has been reached, sorts, then writes to a temp file.
@@ -55,26 +59,31 @@ void printTuple(const EmpBlock& emp, fstream& fout){
 int sortAndStoreEmps(){
     fstream empin, tempout;
     int numTempfiles = 1, blockCount = 0;
-    vector<EmpBlock> emps = {};
+    vector<EmpBlock> emps = {}, tempEmps = {};
 
     empin.open("Emp.csv", ios::in);
-    tempout.open("temp" + to_string(blockCount) + ".csv", ios::out);
+    tempout.open("temp1.csv", ios::out | ios::trunc);
     while(true){
         // FOR BLOCK IN RELATION EMP
         // grabs a block
-        if(blockCount == MAX_BLOCK_SIZE){
+        if(tempEmps.size() == MAX_BLOCK_SIZE){
             numTempfiles++;
+            sort(tempEmps.begin(), tempEmps.end(), EmpBlock());
+            printEmpBlock(tempEmps, tempout);
             tempout.close();
-            tempout.open("temp" + to_string(blockCount) + ".csv", ios::out);
+            tempEmps.clear();
+            tempout.open("temp" + to_string(numTempfiles) + ".csv", ios::out | ios::trunc);
         }
 
         EmpBlock empBlock = grabEmp(empin);
         // checks if filestream is empty
         if(empBlock.eid == -1){
+            sort(tempEmps.begin(), tempEmps.end(), EmpBlock());
+            printEmpBlock(tempEmps, tempout);
             break;
         } else{
             blockCount++;
-            printTuple(empBlock, tempout);
+            tempEmps.push_back(empBlock);
         }
     }
     empin.close();

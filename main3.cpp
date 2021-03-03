@@ -82,14 +82,14 @@ DeptBlock grabDept(fstream& deptin){
 
 //Print out the attributes from emp and dept when a join condition is met
 void printJoin(EmpBlock emp, DeptBlock dept, fstream& fout){
-    fout << emp.eid << ',' << emp.ename << ',' << emp.age << ','
-         << emp.salary << ',' << dept.did << ',' << dept.dname << ','
-         << dept.budget << "\n";
+    fout << dept.did << ',' << dept.dname << ',' << dept.budget << ','
+         << dept.managerid << ',' << emp.eid << ',' << emp.ename << ','
+         << emp.salary << "\n";
 }
 
 void mergeJoin(vector<vector<EmpBlock> > empList, vector<vector<DeptBlock> > deptList){
     fstream joinout;
-    joinout.open("join.csv", ios::out | ios::app);
+    joinout.open("join.csv", ios::out | ios::trunc);
 
     int empIdx1 = 0, empIdx2 = 0, deptIdx1 = 0, deptIdx2 = 0;
     while(true){
